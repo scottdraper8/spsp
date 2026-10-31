@@ -16,6 +16,14 @@ The file must be scoped to the active save profile as well as the ship. The runt
 to obtain a stable profile identity before implementing that scope. If it cannot do so safely, it
 must decline to apply state rather than risk mixing ships from separate saves.
 
+The current Rust store implements a bounded schema-v1 JSON sidecar (256 KiB maximum, up to 16
+profiles and 64 ships per profile), canonical deterministic encoding, strict duplicate and schema
+validation, and same-directory atomic replacement. Profile and ship keys are domain-separated,
+length-prefixed SHA-256 hashes of caller-supplied stable identity fields; raw identity components
+are not written to the sidecar. This hash is not encryption, and the candidate game fields remain
+unverified. The store refuses to replace a pre-existing invalid sidecar so recovery data is not
+silently destroyed.
+
 ## Runtime responsibilities
 
 The runtime has two narrow responsibilities:
