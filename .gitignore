@@ -1,0 +1,19 @@
+# Rust and Python build output
+/target/
+/dist/
+__pycache__/
+*.py[cod]
+
+# Local runtime state and atomic-write leftovers
+**/spsp-power-state.json
+**/.spsp-state-*.tmp
+
+# Investigation and game artifacts
+/investigation-state/
+*.hg
+*.hgz
+*.pak
+*.mbin
+*.dll
+*.exe
+*.log

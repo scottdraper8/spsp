@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Quality and policy gates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        with:
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints:
+            - github.com:443
+            - api.github.com:443
+            - codeload.github.com:443
+            - raw.githubusercontent.com:443
+            - static.rust-lang.org:443
+            - index.crates.io:443
+            - crates.io:443
+            - static.crates.io:443
+            - pypi.org:443
+            - files.pythonhosted.org:443
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install pinned Rust toolchain
+        run: |
+          rustup toolchain install 1.98.1 --profile minimal --component rustfmt --component clippy \
+            --target x86_64-pc-windows-gnu
+          rustup default 1.98.1
+      - name: Install pinned pre-commit
+        run: python3 -m pip install --disable-pip-version-check --user pre-commit==4.6.2
+      - name: Install hook environments
+        run: pre-commit install-hooks
+      - name: Run all repository hooks
+        run: pre-commit run --all-files
+      - name: Check Windows GNU target
+        run: cargo check --workspace --all-targets --all-features --locked --target x86_64-pc-windows-gnu

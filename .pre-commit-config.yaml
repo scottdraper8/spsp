@@ -1,0 +1,81 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c
+    hooks:
+      - id: check-added-large-files
+        args: [--maxkb=1024]
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: check-yaml
+      - id: check-toml
+      - id: check-xml
+      - id: detect-private-key
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: 57b21406f092110c18776e39b0bda50d37c945c
+    hooks:
+      - id: codespell
+        files: \.md$
+
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: 916ad0aaa108c64d294101002066f530ea170b10
+    hooks:
+      - id: markdownlint-cli2
+        args: [--config, .markdownlint-cli2.yaml]
+        files: \.md$
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: 2ca41cc1372d1e939a6a879f18cdc19fc1cac1ce
+    hooks:
+      - id: gitleaks
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: a56c0b927e6465d37cae3e97d35d4d18ab2b96cd
+    hooks:
+      - id: ruff-check
+        types_or: [python, pyi]
+      - id: ruff-format
+        args: [--check]
+        types_or: [python, pyi]
+
+  - repo: local
+    hooks:
+      - id: spsp-policy
+        name: SPSP repository policy
+        entry: python3 -B scripts/check_policy.py
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: policy-tests
+        name: Repository policy regression tests
+        entry: python3 -B -m unittest discover --start-directory tests
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: spsp-xml-assets
+        name: SPSP NMS XML asset validation
+        entry: python3 scripts/validate_xml.py
+        language: system
+        files: (?i)\.(exml|mxml|xml)$
+      - id: rustfmt
+        name: Rust formatting
+        entry: cargo fmt --all -- --check
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: clippy
+        name: Clippy across all targets and features
+        entry: cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: tests
+        name: SPSP test suite
+        entry: cargo test --workspace --all-features --locked
+        language: system
+        pass_filenames: false
+        always_run: true
