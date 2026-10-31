@@ -25,10 +25,11 @@ gates. SPSP must not persist a mode against an ambiguous identity.
 
 ## Project status
 
-The repository currently provides a versioned, serializable power-mode model and the security,
-quality, and dependency-pinning foundation for the implementation. It does not yet provide an
-installable mod, a DLL, or runtime hooks. Do not deploy it to a live game until the runtime and
-persistence gates in [AGENTS.md](AGENTS.md) and [the design contract](docs/design.md) are met.
+The repository provides a bounded, versioned sidecar store with strict validation, stable
+name-independent key types, atomic replacement, and unit tests. The game runtime has not yet proven
+which fields form a stable ship or save-profile identity. SPSP is not installable and has no DLL or
+runtime hooks. Do not deploy it to a live game until the runtime and persistence gates in
+[AGENTS.md](AGENTS.md) and [the design contract](docs/design.md) are met.
 
 ## Development
 

@@ -2,6 +2,8 @@
 
 use serde::{Deserialize, Serialize};
 
+pub mod store;
+
 /// A Starship Power Diversion mode recorded in SPSP's external sidecar.
 ///
 /// These string values are SPSP's file format, not assumed numeric game enum discriminants.
