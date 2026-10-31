@@ -35,9 +35,9 @@ persistence gates in [AGENTS.md](AGENTS.md) and [the design contract](docs/desig
 Use the pinned Rust toolchain and exact dependency versions. From this directory:
 
 ```sh
-cargo fmt --all -- --check
-cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
-cargo test --workspace --all-features --locked
+python3 -B scripts/run_cargo.py fmt --all -- --check
+python3 -B scripts/run_cargo.py clippy --workspace --all-targets --all-features --locked -- -D warnings
+python3 -B scripts/run_cargo.py test --workspace --all-features --locked
 pre-commit run --all-files
 ```
 
@@ -47,8 +47,9 @@ Install the repository's Git hooks before making changes:
 pre-commit install --install-hooks
 ```
 
-Pre-commit is part of the required development path, not an optional convenience. See
-[AGENTS.md](AGENTS.md) before changing code or CI policy.
+Pre-commit is part of the required development path, not an optional convenience. Its first run
+fetches actionlint into a user-local cache and verifies the release archive against the pinned
+SHA-256 before checking workflows. See [AGENTS.md](AGENTS.md) before changing code or CI policy.
 
 ## Game compatibility
 

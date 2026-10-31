@@ -56,6 +56,11 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
+      - id: actionlint
+        name: Validate GitHub Actions workflows
+        entry: python3 -B scripts/run_actionlint.py
+        language: system
+        files: ^\.github/workflows/.*\.ya?ml$
       - id: spsp-xml-assets
         name: SPSP NMS XML asset validation
         entry: python3 scripts/validate_xml.py
@@ -63,19 +68,19 @@ repos:
         files: (?i)\.(exml|mxml|xml)$
       - id: rustfmt
         name: Rust formatting
-        entry: cargo fmt --all -- --check
+        entry: python3 -B scripts/run_cargo.py fmt --all -- --check
         language: system
         pass_filenames: false
         always_run: true
       - id: clippy
         name: Clippy across all targets and features
-        entry: cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+        entry: python3 -B scripts/run_cargo.py clippy --workspace --all-targets --all-features --locked -- -D warnings
         language: system
         pass_filenames: false
         always_run: true
       - id: tests
         name: SPSP test suite
-        entry: cargo test --workspace --all-features --locked
+        entry: python3 -B scripts/run_cargo.py test --workspace --all-features --locked
         language: system
         pass_filenames: false
         always_run: true

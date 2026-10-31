@@ -165,6 +165,7 @@ def check_precommit(messages: list[str]) -> None:
     for hook in (
         "spsp-policy",
         "policy-tests",
+        "actionlint",
         "spsp-xml-assets",
         "rustfmt",
         "clippy",
