@@ -2,7 +2,14 @@
 
 use serde::{Deserialize, Serialize};
 
+#[cfg(any(test, windows))]
+mod identity;
+#[cfg(any(test, windows))]
+mod mode_mapping;
 pub mod store;
+
+#[cfg(windows)]
+pub mod runtime;
 
 /// A Starship Power Diversion mode recorded in SPSP's external sidecar.
 ///
@@ -17,8 +24,8 @@ pub enum PowerMode {
 }
 
 impl PowerMode {
-    /// All supported vanilla modes in the order presented by the game.
-    pub const ALL: [Self; 4] = [Self::Balanced, Self::Engine, Self::Guns, Self::Shield];
+    /// Supported-build order as presented by the game.
+    pub const ALL: [Self; 4] = [Self::Balanced, Self::Guns, Self::Engine, Self::Shield];
 }
 
 #[cfg(test)]
@@ -31,7 +38,7 @@ mod tests {
 
         assert_eq!(
             serialized,
-            ["\"balanced\"", "\"engine\"", "\"guns\"", "\"shield\""]
+            ["\"balanced\"", "\"guns\"", "\"engine\"", "\"shield\""]
         );
     }
 

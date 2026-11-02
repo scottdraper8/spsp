@@ -38,3 +38,32 @@ jobs:
         run: pre-commit run --all-files
       - name: Check Windows GNU target
         run: cargo check --workspace --all-targets --all-features --locked --target x86_64-pc-windows-gnu
+
+  windows:
+    name: Native Windows tests and DLL build
+    runs-on: windows-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        with:
+          disable-sudo: true
+          egress-policy: audit
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install pinned Rust toolchain
+        run: |
+          rustup toolchain install 1.98.1 --profile minimal --component rustfmt --component clippy --target x86_64-pc-windows-msvc
+          rustup default 1.98.1
+      - name: Run native Windows tests
+        run: cargo test --workspace --all-features --locked --target x86_64-pc-windows-msvc
+      - name: Lint native Windows targets
+        run: cargo clippy --workspace --all-targets --all-features --locked --target x86_64-pc-windows-msvc -- -D warnings
+      - name: Build release DLL
+        run: cargo build --release --workspace --all-features --locked --target x86_64-pc-windows-msvc
+      - name: Verify DLL artifact exists
+        shell: pwsh
+        run: |
+          $dll = "target/x86_64-pc-windows-msvc/release/spsp.dll"
+          if (-not (Test-Path $dll)) { throw "Release DLL was not produced: $dll" }
