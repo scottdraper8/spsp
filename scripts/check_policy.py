@@ -164,12 +164,11 @@ def check_precommit(messages: list[str]) -> None:
     text = path.read_text(encoding="utf-8")
     for hook in (
         "spsp-policy",
-        "policy-tests",
         "actionlint",
         "spsp-xml-assets",
         "rustfmt",
         "clippy",
-        "tests",
+        "windows-check",
         "gitleaks",
     ):
         if f"id: {hook}" not in text:

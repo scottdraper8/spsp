@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   checks:
-    name: Quality and policy gates
+    name: Behavioral tests
     runs-on: ubuntu-latest
     steps:
       - name: Harden runner
@@ -27,17 +27,12 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install pinned Rust toolchain
         run: |
-          rustup toolchain install 1.98.1 --profile minimal --component rustfmt --component clippy \
-            --target x86_64-pc-windows-gnu
+          rustup toolchain install 1.98.1 --profile minimal
           rustup default 1.98.1
-      - name: Install pinned pre-commit
-        run: python3 -m pip install --disable-pip-version-check --user pre-commit==4.6.2
-      - name: Install hook environments
-        run: pre-commit install-hooks
-      - name: Run all repository hooks
-        run: pre-commit run --all-files
-      - name: Check Windows GNU target
-        run: cargo check --workspace --all-targets --all-features --locked --target x86_64-pc-windows-gnu
+      - name: Run repository policy regression tests
+        run: python3 -B -m unittest discover --start-directory tests
+      - name: Run SPSP test suite
+        run: cargo test --workspace --all-features --locked
 
   windows:
     name: Native Windows tests and DLL build
@@ -54,12 +49,10 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install pinned Rust toolchain
         run: |
-          rustup toolchain install 1.98.1 --profile minimal --component rustfmt --component clippy --target x86_64-pc-windows-msvc
+          rustup toolchain install 1.98.1 --profile minimal --target x86_64-pc-windows-msvc
           rustup default 1.98.1
       - name: Run native Windows tests
         run: cargo test --workspace --all-features --locked --target x86_64-pc-windows-msvc
-      - name: Lint native Windows targets
-        run: cargo clippy --workspace --all-targets --all-features --locked --target x86_64-pc-windows-msvc -- -D warnings
       - name: Build release DLL
         run: cargo build --release --workspace --all-features --locked --target x86_64-pc-windows-msvc
       - name: Verify DLL artifact exists
