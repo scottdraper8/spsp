@@ -8,7 +8,12 @@ import sys
 from pathlib import Path
 
 import tomllib
-from policy_rules import has_bypass, suppression_lines, unpinned_actions
+from policy_rules import (
+    has_bypass,
+    suppression_lines,
+    unpinned_actions,
+    unpinned_precommit_revisions,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_SUFFIXES = {
@@ -131,6 +136,15 @@ def check_manifests(messages: list[str]) -> None:
 
     if not (ROOT / "Cargo.lock").is_file():
         messages.append("Cargo.lock is required")
+    else:
+        with (ROOT / "Cargo.lock").open("rb") as stream:
+            lock = tomllib.load(stream)
+        for package in lock.get("package", []):
+            source = package.get("source", "")
+            if str(source).startswith("git+"):
+                messages.append(
+                    f"Cargo.lock contains Git dependency {package.get('name', '<unknown>')}"
+                )
 
 
 def check_workflows(messages: list[str]) -> None:
@@ -162,6 +176,10 @@ def check_precommit(messages: list[str]) -> None:
         messages.append(".pre-commit-config.yaml is required")
         return
     text = path.read_text(encoding="utf-8")
+    for revision in unpinned_precommit_revisions(text):
+        messages.append(
+            f".pre-commit-config.yaml: hook revision {revision!r} is not a full commit SHA"
+        )
     for hook in (
         "spsp-policy",
         "actionlint",
@@ -184,10 +202,8 @@ def check_security_updates(messages: list[str]) -> None:
     for ecosystem in ("cargo", "github-actions"):
         if f"package-ecosystem: {ecosystem}" not in text:
             messages.append(f"Dependabot must monitor {ecosystem}")
-    if text.count("open-pull-requests-limit: 0") < 2:
-        messages.append(
-            "Dependabot version updates must not create unbounded routine PRs"
-        )
+    if text.count("open-pull-requests-limit: 0") != 2:
+        messages.append("Dependabot routine version-update PRs must be disabled")
     if "versioning-strategy: increase" not in text:
         messages.append("Cargo Dependabot updates must preserve exact pins")
 
