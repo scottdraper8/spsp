@@ -27,6 +27,10 @@ BYPASS_PATTERNS = [
     re.compile(r"PRE_COMMIT_" + r"ALLOW_NO_CONFIG", re.IGNORECASE),
 ]
 ACTION_PIN = re.compile(r"^\s*uses:\s*([^\s#]+)@([^\s#]+)", re.MULTILINE)
+PRECOMMIT_PIN = re.compile(
+    r"^\s*-\s+repo:\s*(?!local\s*$)\S+.*?^\s+rev:\s*([^\s#]+)",
+    re.MULTILINE | re.DOTALL,
+)
 SHA40 = re.compile(r"[0-9a-f]{40}\Z")
 
 
@@ -48,4 +52,12 @@ def unpinned_actions(text: str) -> list[str]:
         action
         for action, revision in ACTION_PIN.findall(text)
         if not action.startswith(("./", "docker://")) and not SHA40.fullmatch(revision)
+    ]
+
+
+def unpinned_precommit_revisions(text: str) -> list[str]:
+    return [
+        revision
+        for revision in PRECOMMIT_PIN.findall(text)
+        if not SHA40.fullmatch(revision)
     ]

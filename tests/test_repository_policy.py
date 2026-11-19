@@ -6,7 +6,12 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.policy_rules import has_bypass, suppression_lines, unpinned_actions
+from scripts.policy_rules import (
+    has_bypass,
+    suppression_lines,
+    unpinned_actions,
+    unpinned_precommit_revisions,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -47,6 +52,24 @@ class RepositoryPolicyTests(unittest.TestCase):
             unpinned_actions("uses: actions/checkout@v4\n"), ["actions/checkout"]
         )
         self.assertEqual(unpinned_actions("uses: ./local-action\n"), [])
+
+    def test_precommit_hooks_require_full_immutable_revisions(self) -> None:
+        pinned = "a" * 40
+        self.assertEqual(
+            unpinned_precommit_revisions(
+                f"- repo: https://example.invalid/hook\n  rev: {pinned}\n"
+            ),
+            [],
+        )
+        self.assertEqual(
+            unpinned_precommit_revisions(
+                "- repo: https://example.invalid/hook\n  rev: v1.2.3\n"
+            ),
+            ["v1.2.3"],
+        )
+        self.assertEqual(
+            unpinned_precommit_revisions("- repo: local\n  hooks: []\n"), []
+        )
 
 
 class XmlAssetTests(unittest.TestCase):
